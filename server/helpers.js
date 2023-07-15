@@ -2,6 +2,7 @@ const axios = require('axios');
 const dotenv = require('dotenv').config();
 const workoutCategory = require('./models/workoutDefaultModel');
 const UserWorkout = require('./models/userWorkoutModel');
+const mailgun = require('mailgun-js')( {apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN} );
 
 
 // Generate conrtaier
@@ -45,6 +46,28 @@ helpers.deleteUserWorkouts = async (userId) => {
                 await UserWorkout.findByIdAndDelete(workout._id);
             }
         }
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+// @desc    Function to send email using mailgun
+helpers.sendEmail = async (email, subject, text) => {
+    try {
+        const data = {
+            from: process.env.MAILGUN_EMAIL,
+            to: email,
+            subject: subject,
+            html: text
+        };
+
+        mailgun.messages().send(data, (error, body) => {
+            if (error) {
+                console.error(error);
+            } else {
+                console.log(body);
+            }
+        });
     } catch (error) {
         console.error(error);
     }
